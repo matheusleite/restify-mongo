@@ -1,6 +1,11 @@
 const restify = require('restify');
 const server = restify.createServer();
-const mongoose = require('mongoose');
+const app = require('./app');
+const User = require('./user');
+var json2csv = require('json2csv');
+
+var fields = ['name', 'email', 'document'];
+var fieldNames = ['Name', 'Email', 'Document'];
 
 server.use(restify.plugins.bodyParser({mapParams: true}));
 
@@ -11,14 +16,19 @@ server.get('/', (request, response) => {
 })
 
 server.get('/users', (request, response) => {
-    response.send({
-        mensagem:"Oi Sorteio Fenae"
+    
+    User.find({}, function (err, users) {
+        response.send(users);
     });
 })
 
 server.get('/export', (request, response) => {
-    response.send({
-        mensagem:"Oi Sorteio Fenae"
+    
+    User.find({}, function (err, users) {
+        var data = json2csv.parse({ data: users, fields: fields, fieldNames: fieldNames });
+        response.header('content-type', 'csv');
+        // response.attachment('filename.csv');
+        response.send(200, data);
     });
 })
 
@@ -40,37 +50,3 @@ server.post('/create', (request, response) => {
 server.listen(process.env.PORT || 3000, () => {
     console.log("Server running");
 })
-
-mongoose.connect('mongodb://root:ydUB4msK@ds251849.mlab.com:51849/heroku_wnzklj0z');
-
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
-  // we're connected!
-  console.log('DB connected successfully');
-});
-
-var userSchema = mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-      },
-    email:{
-        type: String,
-        required: true
-      },
-    document: {
-        type: String,
-        required: true
-      },
-});
-
-var User = mongoose.model('User', userSchema);
-
-var me = new User({ 
-        name: 'Matheus Leite',
-        email: 'matheusleite@email.com',
-        document: '05176984121'
-     });
-
-console.log(me.name);
