@@ -37,7 +37,7 @@ server.post('/create', (request, response) => {
     response.send(200);
 })
 
-server.listen(3000, () => {
+server.listen(process.env.PORT || 3000, () => {
     console.log("Server running");
 })
 
